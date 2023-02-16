@@ -6,6 +6,10 @@ const productsRoute = require('./routes/products.js')
 const qaRoute = require('./routes/qa.js')
 const reviewsRoute = require('./routes/reviews.js')
 
+// middleware
+app.use(express.json());
+
+// routes
 app.use('/products', productsRoute)
 app.use('/qa', qaRoute)
 app.use('/reviews', reviewsRoute)
