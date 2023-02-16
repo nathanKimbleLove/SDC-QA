@@ -1,10 +1,17 @@
 const express = require('express');
+const controller = require('../controllers.js');
 qaRoute = express.Router();
 
 qaRoute.get('/questions/*', (req, res) => {
-  console.log(req.url, req.query);
-  //I: req, needs a product_id, MAYBE count (default 5), MAYBE page (default 1)
+  // console.log(req.url, req.query);
+  req.query.table = 'questions';
+  controller.select(res, req.query);
 
+
+
+
+
+  //I: req, needs a product_id, MAYBE count (default 5), MAYBE page (default 1)
   //O: res.send(obj)
   /*
   {
