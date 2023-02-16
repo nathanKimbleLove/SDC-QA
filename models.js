@@ -1,120 +1,68 @@
 let db = require('./database/index.js');
 
-let query = (text) => db.query(text)
+const query = (text) => db.query(text)
 
-let selectConstructor = (obj) => {
-  return `SELECT * FROM ${obj.table} WHERE ${obj.parent} = ${obj.parentId} ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''}`
-}
+const selectQ = (obj) => {
+  let tempText = `SELECT * FROM questions WHERE product_id = ${obj.product_id} AND reported = false ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''};
+  SELECT * FROM answers WHERE question_id IN (SELECT id FROM questions WHERE product_id = ${obj.product_id} AND reported = false ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''});
+  SELECT * FROM answers_photos WHERE answer_id IN (SELECT id FROM answers WHERE question_id IN (SELECT id FROM questions WHERE product_id = ${obj.product_id} AND reported = false ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''}))`;
+  console.log(tempText);
 
-let insertConstructor = (obj, table) => {
-  return `INSERT INTO ${table}(${Object.keys(obj).join(', ')}) VALUES(${Object.values(obj).join(', ')})`
-}
-
-let selectMultipleConstructor = (obj) => {
-  let text = `SELECT * FROM ${obj.table} WHERE `;
-  let l = obj.arr.length
-  for (let i = 0; i < l; i++) {
-    let temp = `${obj.parent} = ${obj.arr[i]}`
-    if (i !== l-1) temp += ' OR '
-    text += temp;
-  }
-  return text;
-}
-
-let selectMultiple = (obj) => {
-  return new Promise((resolve, reject) => {
-    let text = selectMultipleConstructor(obj);
-    query(text)
-    .then((resp) => {
-      selectChildren(obj, resp, resolve, reject);
-    })
+  return new Promise((res, rej) => {
+    query(tempText)
+    .then(resp => res(resp));
   })
 }
 
-let select = (obj) => {
-  return new Promise((resolve, reject) => {
-    let text = selectConstructor(obj);
-    query(text)
-    .then((resp) => {
-      selectChildren(obj, resp, resolve, reject);
-    })
+const insertQ = (obj) => {
+  let tempText = `INSERT INTO questions (product_id, body, date_written, asker_name, asker_email)
+  VALUES(${obj.product_id}, $$${obj.body}$$, ${Date.now()}, $$${obj.name}$$, $$${obj.email}$$)`;
+
+  return new Promise((res, rej) => {
+    query(tempText)
+    .then(resp=> res(resp));
   })
 }
 
-let selectChildren = (obj, resp, res, rej) => {
-  if (obj.child) {
-    let selectMultipleObject = {
-      table: obj.child.table,
-      parent: obj.child.parent,
-      child: obj.child.child,
-      arr: []
-    }
-    for(let i = 0; i < resp.rows.length; i++) {
-      selectMultipleObject.arr.push(resp.rows[i].id)
-    }
-    selectMultiple(selectMultipleObject)
-    .then((vals) => {
-      res([resp.rows, vals]);
-    })
-  } else {
-    res(resp.rows);
-  }
+
+module.exports.selectQ = selectQ;
+module.exports.insertQ = insertQ;
+
+const exampleInsertQ = () => {
+  console.time();
+  console.log(Date.now());
+  insertQ({
+    name: 'smolder',
+    email: 'smolder@jenkins.gov',
+    product_id: 37315,
+    body: 'i am the jenkins'
+  })
+  .then(res=> {
+    console.timeEnd();
+    console.log(res)
+  })
 }
-module.exports.select = select;
+// exampleInsertQ();
 
+const exampleSelectQ = () => {
+  let tempObj = {
+    product_id: 2,
+    count: 3,
+    page: 2
+  }
+  console.time()
+  selectQ(tempObj)
+    .then(res => {
+      console.log(res);
+      console.timeEnd();
+      //
+    })
+  .catch(err => console.log(err));
+}
+// exampleSelectQ();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// let exampleSelect = () => {
-//   let tempObj = {
-//     table: 'questions',
-//     parent: 'product_id',
-//     parentId: 2,
-//     count: 3,
-//     page: 2,
-//     child: {
-//       parent: 'question_id',
-//       table: 'answers',
-//       child: {
-//         parent: 'answer_id',
-//         table: 'answers_photos'
-//       }
-//     }
-//   }
-//   // console.time()
-//   select(tempObj)
-//     .then(res => {
-//       console.log(res);
-//       // console.timeEnd();
-//       // 7s, 12s, 6.5s
-//     })
-//   .catch(err => console.log(err));
-// }
-// exampleSelect();
-
-// select * from [table] [ ORDER BY ...]
-// [LIMIT num | ALL] [OFFSET num]
-
-//ORDER BY CASE WHEN f(x) <=> y THEN 1
-//              WHEN f'(x) <=> y THEN 2
-// ETC ...
+/*
+EXPLAIN ANALYZE SELECT * FROM questions WHERE product_id = 2 AND reported = false LIMIT 3;
+EXPLAIN ANALYZE SELECT * FROM answers WHERE question_id IN (SELECT id FROM questions WHERE product_id = 2 AND reported = false LIMIT 3);
+EXPLAIN ANALYZE SELECT * FROM answers_photos WHERE answer_id IN (SELECT id FROM answers WHERE question_id IN (SELECT id FROM questions WHERE product_id = 2 AND reported = false LIMIT 3));
+*/
