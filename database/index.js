@@ -1,15 +1,15 @@
-const { Client } = require('pg');
+const { Pool } = require('pg');
 
-const client = new Client({
+const pool = new Pool({
   host: 'localhost',
   port: 5432,
   database: 'sdcqa'
 })
-client
+pool
   .connect()
   .then(a => console.log('connected'))
   .catch(err => console.error('connection error', err.stack));
 
 
-module.exports = client;
+module.exports = pool;
 // where id > (page * count - count + 1) AND id < (page * count)

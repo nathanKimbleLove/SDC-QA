@@ -23,7 +23,7 @@ const selectQ = (res, obj) => {
       let tempQ = {
         question_id: qs[i].id,
         question_body: qs[i].body,
-        question_date: qs[i].date_written,
+        question_date: new Date(parseInt(qs[i].date_written)).toISOString(),
         asker_name: qs[i].asker_name,
         question_helpfulness: qs[i].helpful,
         reported: qs[i].reported,
@@ -35,11 +35,12 @@ const selectQ = (res, obj) => {
       let tempA = {
         id: as[j].id,
         body: as[j].body,
-        date: as[j].date_written,
+        date: new Date(parseInt(as[j].date_written)).toISOString(),
         answerer_name: as[j].answerer_name,
         helpfulness: as[j].helpful,
         photos: as[j].photos || []
       }
+
       for (let i = 0; i < returnObj.results.length; i++) {
         if (returnObj.results[i].question_id === as[j].question_id){
           returnObj.results[i].answers[tempA.id] = tempA
@@ -76,7 +77,7 @@ const selectA = (res, obj) => {
       let tempA = {
         id: as[j].id,
         body: as[j].body,
-        date: as[j].date_written,
+        date: new Date(parseInt(as[j].date_written)).toISOString(),
         answerer_name: as[j].answerer_name,
         helpfulness: as[j].helpful,
         photos: as[j].photos || []

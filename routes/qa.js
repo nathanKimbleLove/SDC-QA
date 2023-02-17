@@ -7,11 +7,14 @@ qaRoute.get('/questions/:question_id/answers*', (req, res) => {
   controller.selectA(res, req.params);
 })
 
-qaRoute.get('/questions/*', (req, res) => {
+qaRoute.get('/questions*', (req, res) => {
   console.log('youre in the questions thing', req.query)
+  console.log(req.url, req.params, req.query)
   req.query.table = 'questions';
   controller.selectQ(res, req.query);
 })
+
+// qaRoute.get('/*', (req, res) => console.log(req.url, req.params, req.query))
 
 qaRoute.post('/questions/:question_id/answers', (req, res) => {
   controller.insertA(res, req.params, req.body);
