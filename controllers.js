@@ -1,11 +1,8 @@
 const models = require('./models.js');
 
 const selectQ = (res, obj) => {
-  console.time()
   models.selectQ(obj)
   .then(resp => {
-    console.timeEnd();
-    console.time();
     let [qs, as, phs] = resp;
     qs = qs.rows;
     as = as.rows;
@@ -40,7 +37,8 @@ const selectQ = (res, obj) => {
         body: as[j].body,
         date: as[j].date_written,
         answerer_name: as[j].answerer_name,
-        photos: as[j].photos
+        helpfulness: as[j].helpful,
+        photos: as[j].photos || []
       }
       for (let i = 0; i < returnObj.results.length; i++) {
         if (returnObj.results[i].question_id === as[j].question_id){
@@ -48,32 +46,86 @@ const selectQ = (res, obj) => {
         }
       }
     }
-    console.timeEnd();
     return returnObj;
   })
   .then(ret => res.send(ret))
-  .catch(err => console.log(err))
+  .catch(err => res.status(400).send(err))
+}
+
+const selectA = (res, obj) => {
+  models.selectA(obj)
+  .then(resp => {
+    console.log(resp);
+    let [as, phs] = resp;
+    as = as.rows;
+    phs = phs.rows;
+    let returnObj = {
+      question: obj.question_id,
+      page: obj.page || 1,
+      count: obj.count || 5,
+      results: []
+    }
+    for (let i = 0; i < phs.length; i++) {
+      for (let j = 0; j < as.length; j++) {
+        if (as[j].id === phs[i].answer_id) {
+          as[j].photos ? as[j].photos.push({id: phs[i].id, url: phs[i].url}) : as[j].photos = [{id: phs[i].id, url: phs[i].url}];
+        }
+      }
+    }
+    for (let j = 0; j < as.length; j++) {
+      let tempA = {
+        id: as[j].id,
+        body: as[j].body,
+        date: as[j].date_written,
+        answerer_name: as[j].answerer_name,
+        helpfulness: as[j].helpful,
+        photos: as[j].photos || []
+      }
+      returnObj.results.push(tempA);
+    }
+    return returnObj;
+  })
+  .then(ret => res.send(ret))
+  .catch(err => {
+    console.log(err);
+    res.status(400).send(err);
+  })
 }
 
 const insertQ = (res, obj) => {
   models.insertQ(obj)
   .then(resp => {
-    res.sendStatus(204);
-    console.log(resp, 'says the response!');
+    res.sendStatus(200);
   })
-  .catch(err => console.log(err))
+  .catch(err => res.status(400).send(err));
+}
+
+const insertA = (res, q, obj) => {
+  console.log(q, obj);
+  models.insertA(q, obj)
+  .then(resp => {
+    console.log(resp);
+    res.sendStatus(200);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(400).send(err)
+  });
+}
+
+const update = (res, arr) => {
+  models.update(arr)
+  .then(resp => {
+    res.sendStatus(200);
+  })
+  .catch(err => {
+    console.log(err)
+    res.status(400).send(err)
+  });
 }
 
 module.exports.selectQ = selectQ;
+module.exports.selectA = selectA;
 module.exports.insertQ = insertQ;
-
-let testSel = () => {
-  selectQ({}, {product_id: 2, count: 3, page: 2 })
-}
-// testSel();
-
-let testIns = () => {
-  insertQ({}, {name: 'smolder', email: 'smolder@jenkins.gov', product_id: 37315, body: 'i am the jenkins'})
-}
-// testIns();
-
+module.exports.insertA = insertA;
+module.exports.update = update;
