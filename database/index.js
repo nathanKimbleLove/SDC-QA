@@ -10,6 +10,4 @@ pool
   .then(a => console.log('connected'))
   .catch(err => console.error('connection error', err.stack));
 
-
 module.exports = pool;
-// where id > (page * count - count + 1) AND id < (page * count)

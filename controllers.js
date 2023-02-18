@@ -56,7 +56,6 @@ const selectQ = (res, obj) => {
 const selectA = (res, obj) => {
   models.selectA(obj)
   .then(resp => {
-    console.log(resp);
     let [as, phs] = resp;
     as = as.rows;
     phs = phs.rows;
@@ -75,7 +74,7 @@ const selectA = (res, obj) => {
     }
     for (let j = 0; j < as.length; j++) {
       let tempA = {
-        id: as[j].id,
+        answer_id: as[j].id,
         body: as[j].body,
         date: new Date(parseInt(as[j].date_written)).toISOString(),
         answerer_name: as[j].answerer_name,
@@ -96,17 +95,15 @@ const selectA = (res, obj) => {
 const insertQ = (res, obj) => {
   models.insertQ(obj)
   .then(resp => {
-    res.sendStatus(200);
+    res.sendStatus(201);
   })
   .catch(err => res.status(400).send(err));
 }
 
 const insertA = (res, q, obj) => {
-  console.log(q, obj);
   models.insertA(q, obj)
   .then(resp => {
-    console.log(resp);
-    res.sendStatus(200);
+    res.sendStatus(201);
   })
   .catch(err => {
     console.log(err);
@@ -117,7 +114,7 @@ const insertA = (res, q, obj) => {
 const update = (res, arr) => {
   models.update(arr)
   .then(resp => {
-    res.sendStatus(200);
+    res.sendStatus(204);
   })
   .catch(err => {
     console.log(err)
