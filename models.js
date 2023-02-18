@@ -6,7 +6,6 @@ const selectQ = (obj) => {
   let tempText = `SELECT * FROM questions WHERE product_id = ${obj.product_id} AND reported = false ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''};
   SELECT * FROM answers WHERE question_id IN (SELECT id FROM questions WHERE product_id = ${obj.product_id} AND reported = false ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''});
   SELECT * FROM answers_photos WHERE answer_id IN (SELECT id FROM answers WHERE question_id IN (SELECT id FROM questions WHERE product_id = ${obj.product_id} AND reported = false ${obj.sort ? `ORDER BY ${obj.sort}` : ''} LIMIT ${obj.count || 5} ${obj.page ? `OFFSET ${obj.count * obj.page - obj.count}` : ''}))`;
-  console.log(tempText);
 
   return new Promise((res, rej) => {
     query(tempText)
@@ -42,12 +41,10 @@ const insertA = (q, obj) => {
   VALUES(${q.question_id}, $$${obj.body}$$, ${Date.now()}, $$${obj.name}$$, $$${obj.email}$$);
   `;
   for (let i = 0; i < obj.photos.length; i++) {
-    console.log(obj.photos[i]);
     tempText += `INSERT INTO answers_photos (answer_id, url) VALUES((SELECT pg_sequence_last_value('answers_id_seq')), $$${obj.photos[i]}$$)`;
     if (i != obj.photos.length - 1) tempText += `;
     `
   }
-  console.log(tempText);
   return new Promise((res, rej) => {
     query(tempText)
     .then(resp=> res(resp))
@@ -58,7 +55,6 @@ const insertA = (q, obj) => {
 const update = (arr) => {
   let tempText = `UPDATE ${arr[1]} SET ${arr[3]} WHERE id = ${arr[2]}`;
 
-  console.log(tempText);
   return new Promise((res, rej) => {
     query(tempText)
     .then(resp=> res(resp))

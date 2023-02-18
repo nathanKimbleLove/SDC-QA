@@ -109,15 +109,16 @@ describe('GET answers', () => {
 describe("POST questions", () => {
   let last;
   beforeAll(async () => {
-    await db.query(`SELECT pg_sequence_last_value('questions_id_seq')`)
+    await db.query(`SELECT id FROM questions WHERE id > 3510000 order by id desc`)
     .then(res => {
-      last = parseInt(res.rows[0].pg_sequence_last_value);
+      last = parseInt(res.rows[0].id) + 1;
     });
   })
   afterAll(async () => {
-    db.query(`DELETE FROM questions WHERE id > ${last} OR id = ${last};
+    await db.query(`DELETE FROM questions WHERE id > ${last} OR id = ${last};
     ALTER SEQUENCE questions_id_seq RESTART WITH ${last};`);
   });
+
   let obj = {
     name: 'i am a test',
     email: 'test@test.test',
@@ -125,7 +126,36 @@ describe("POST questions", () => {
   };
 
   it('should fail when obj.body is undefined', async () => {
-    console.log(last);
+    request(baseURL).post('/questions').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(400);
+    })
+    .catch(err => console.log(err));
+  })
+
+  it('should fail when obj.name is undefined', async () => {
+    obj.body = 'this is a test';
+    obj.name = undefined;
+    request(baseURL).post('/questions').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(400);
+    })
+    .catch(err => console.log(err));
+  })
+
+  it('should fail when obj.email is undefined', async () => {
+    obj.name = 'i am a test';
+    obj.email = undefined;
+    request(baseURL).post('/questions').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(400);
+    })
+    .catch(err => console.log(err));
+  })
+
+  it('should fail when obj.product_id is a string', async () => {
+    obj.email = 'test@test.test';
+    obj.product_id = 'asdf';
     request(baseURL).post('/questions').send(obj)
     .then(res => {
       expect(res.statusCode).toBe(400);
@@ -134,9 +164,90 @@ describe("POST questions", () => {
   })
 
   it('should pass when obj has body, name, email, and id', async () => {
-    obj.body = 'this is a test';
+    obj.product_id = 1;
+
     const response = await request(baseURL).post('/questions').send(obj);
     expect(response.statusCode).toBe(201);
+    db.query(`SELECT product_id FROM questions WHERE id = ${last}`)
+    .then(res => {
+      expect(res.rows[0].product_id).toBe(1)
+    });
   })
 
 })
+
+describe("POST answers", () => {
+  let last;
+  let lastPh;
+  beforeAll(async () => {
+    await db.query(`SELECT id FROM answers WHERE id > 6879250 order by id desc`)
+    .then(res => {
+      last = parseInt(res.rows[0].id) + 1;
+    });
+    await db.query(`SELECT id FROM answers_photos WHERE id > 2050000 order by id desc`)
+    .then(res => {
+      lastPh = parseInt(res.rows[0].id) + 1;
+    });
+  })
+  afterAll(async () => {
+    await db.query(`DELETE FROM answers WHERE id > ${last} OR id = ${last};
+    ALTER SEQUENCE answers_id_seq RESTART WITH ${last};
+    DELETE FROM answers_photos WHERE id > ${lastPh} OR id = ${lastPh};
+    ALTER SEQUENCE answers_photos_id_seq RESTART WITH ${lastPh};`);
+  });
+
+  let obj = {
+    name: 'i am a test',
+    email: 'test@test.test',
+    photos: ['asdf']
+  };
+
+  it('should fail when obj.body is undefined', async () => {
+    request(baseURL).post('/questions/1/answers').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(400);
+    })
+    .catch(err => console.log(err));
+  })
+
+  it('should fail when obj.name is undefined', async () => {
+    obj.body = 'this is a test';
+    obj.name = undefined;
+    request(baseURL).post('/questions/1/answers').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(400);
+    })
+    .catch(err => console.log(err));
+  })
+
+  it('should fail when obj.email is undefined', async () => {
+    obj.body = 'this is a test';
+    obj.name = 'i am a test';
+    obj.email = undefined;
+    request(baseURL).post('/questions/1/answers').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(400);
+    })
+    .catch(err => console.log(err));
+  })
+
+  it('should pass when all params are given', async () => {
+    obj.email = 'test@test.test';
+    request(baseURL).post('/questions/1/answers').send(obj)
+    .then(res => {
+      expect(res.statusCode).toBe(201);
+      db.query(`SELECT question_id FROM answers WHERE id = ${last}`)
+        .then(res => {
+          expect(res.rows[0].question_id).toBe(1)
+        });
+      db.query(`SELECT answer_id FROM answers_photos WHERE id = ${lastPh}`)
+        .then(res => {
+          expect(res.rows[0].answer_id).toBe(last)
+        });
+    })
+    .catch(err => console.log(err));
+  })
+})
+
+// DEAL WITH ASYNC/AWAIT
+// DEAL WITH PUT ROUTES
