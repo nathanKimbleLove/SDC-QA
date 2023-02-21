@@ -14,6 +14,6 @@ app.use('/products', productsRoute)
 app.use('/qa', qaRoute)
 app.use('/reviews', reviewsRoute)
 
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Example app listening on port ${port}`)
 })

@@ -2,9 +2,24 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 
 export const options = {
-  vus: 100,
-  duration: '10s'
+  scenarios: {
+    constant_request_rate: {
+      executor: 'constant-arrival-rate',
+      rate: 1000,
+      timeUnit: '1s',
+      duration: '30s',
+      preAllocatedVUs: 500,
+      maxVUs: 1000,
+    },
+  },
+};
+
+/*
+export const options = {
+  vus: 1000,
+  duration: '30s'
 }
+*/
 
 export default function () {
   let rand = Math.ceil(Math.random() * 3517500);

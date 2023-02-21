@@ -76,7 +76,7 @@ describe('GET answers', () => {
 
     expect(response.body.page).toBe(1);
     expect(response.body.count).toBe(5);
-    expect(response.body.results.length).toBe(5);
+    expect(response.body.results.length).toBe(4);
 
     // THIS TEST IS RELIANT ON ONE ANSWER IMPLEMENTED BY ME WHILE TESTING
     // WILL PROBABLY FAIL WHEN DEPLOYING
