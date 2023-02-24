@@ -53,7 +53,7 @@ describe('GET questions', () => {
 
 describe('GET answers', () => {
 
-  it('should return the described object', async() => {
+  it('should return the described object', async () => {
     const response = await request(baseURL).get('/questions/57/answers').send({completed:true});
 
     expect(response.statusCode).toBe(200);
@@ -71,7 +71,7 @@ describe('GET answers', () => {
     expect(response.body.results[0].photos[0].url).toBe("https://images.unsplash.com/photo-1426647451887-5f2be01918a9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80");
   })
 
-  it('should default count 5 and page 1', async() => {
+  it('should default count 5 and page 1', async () => {
     const response = await request(baseURL).get('/questions/32/answers').send({completed:true});
 
     expect(response.body.page).toBe(1);
@@ -82,7 +82,7 @@ describe('GET answers', () => {
     // WILL PROBABLY FAIL WHEN DEPLOYING
   })
 
-  it('should accept page and count params', async() => {
+  it('should accept page and count params', async () => {
     const response = await request(baseURL).get('/questions/32/answers/?page=2&count=2').send({completed:true});
 
     expect(response.body.page).toBe("2");
@@ -93,7 +93,7 @@ describe('GET answers', () => {
     expect(response.body.results[1].answer_id).toBe(88);
   })
 
-  it('should accept params wo slash', async() => {
+  it('should accept params wo slash', async () => {
     const response = await request(baseURL).get('/questions/32/answers?page=2&count=2').send({completed:true});
 
     expect(response.body.page).toBe("2");
@@ -247,7 +247,5 @@ describe("POST answers", () => {
     })
     .catch(err => console.log(err));
   })
-})
 
-// DEAL WITH ASYNC/AWAIT
-// DEAL WITH PUT ROUTES
+});

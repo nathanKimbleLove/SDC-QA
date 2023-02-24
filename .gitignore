@@ -8,3 +8,7 @@ node_modules/
 
 Dockerfile
 
+.DS_Store
+
+/archives
+
